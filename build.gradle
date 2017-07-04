@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarVersion}"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+apply plugin: 'org.sonarqube'
+apply plugin: 'org.springframework.boot'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+
+    compile 'org.projectlombok:lombok'
+    compile "io.springfox:springfox-swagger2:${swaggerVersion}"
+    compile 'org.springframework.boot:spring-boot-starter-jetty'
+    compile "io.springfox:springfox-swagger-ui:${swaggerVersion}"
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.batch:spring-batch-core:3.0.7.RELEASE'
+    compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
+}
+
+jar {
+    baseName = 'securityspringapp'
+    group = 'com.thefloow'
+    version = '1.0-SNAPSHOT'
+}
+
+task wrapper(type : Wrapper){
+    gradleVersion = '4.0'
+}
