@@ -2,12 +2,11 @@ package com.thefloow.config;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +27,8 @@ public class BatchConfiguration {
 
     @Bean
     public Step stepOne(){
-        return stepBuilderFactory.get("stepOne")
+
+        return stepBuilderFactory.get("stepFour")
                 .tasklet((contribution, chunkContext) -> {
                         System.out.println(">> This is step 1");
                         return RepeatStatus.FINISHED;
@@ -37,6 +37,7 @@ public class BatchConfiguration {
 
     @Bean
     public Step stepTwo(){
+
         return stepBuilderFactory.get("stepTwo")
                 .tasklet((contribution, chunkContext) -> {
                     System.out.println(">> This is step 2");
@@ -46,6 +47,7 @@ public class BatchConfiguration {
 
     @Bean
     public Step stepThree(){
+
         return stepBuilderFactory.get("stepThree")
                 .tasklet((contribution, chunkContext) -> {
                     System.out.println(">> This is step 3");
@@ -54,11 +56,25 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Job transitionJob(){
+    public Job transitionJob(Flow flow){
+
         return jobBuilderFactory.get("transitionJob")
                 .start(stepOne())
+                .on("COMPLETED").to(stepTwo())
+                .from(stepTwo()).on("COMPLETED").to(stepThree())
+                .from(stepThree()).end()
+                .build();
+    }
+
+    @Bean
+    public Flow foo(){
+
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("foo");
+        flowBuilder.start(stepOne())
                 .next(stepTwo())
                 .next(stepThree())
-                .build();
+                .end();
+
+        return flowBuilder.build();
     }
 }
