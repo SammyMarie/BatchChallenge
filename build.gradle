@@ -27,6 +27,7 @@ dependencies {
 
     compile 'com.h2database:h2'
     compile 'org.projectlombok:lombok'
+    compile 'org.springframework:spring-oxm'
     compile 'mysql:mysql-connector-java:6.0.6'
     compile 'org.springframework.boot:spring-boot-starter-jdbc'
     compile 'org.springframework.boot:spring-boot-starter-batch'
