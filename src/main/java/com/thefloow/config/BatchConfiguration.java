@@ -1,10 +1,9 @@
 package com.thefloow.config;
 
 import com.mongodb.Mongo;
-import com.thefloow.model.Mediawiki;
+import com.thefloow.model.Page;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.item.data.MongoItemWriter;
@@ -18,6 +17,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.oxm.xstream.XStreamMarshaller;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,6 @@ import java.util.Map;
  * Created by sammymarie on 04/07/17.
  */
 @Configuration
-@EnableBatchProcessing
 public class BatchConfiguration {
 
     @Value("${data.input}")
@@ -45,8 +44,8 @@ public class BatchConfiguration {
     private StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public MultiResourceItemReader<Mediawiki> multiResourceItemReader(){
-        MultiResourceItemReader<Mediawiki> reader = new MultiResourceItemReader<>();
+    public MultiResourceItemReader<Page> multiResourceItemReader(){
+        MultiResourceItemReader<Page> reader = new MultiResourceItemReader<>();
 
         reader.setDelegate(pageItemReader());
         reader.setResources(dataInput);
@@ -55,27 +54,27 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public StaxEventItemReader<Mediawiki> pageItemReader(){
+    public StaxEventItemReader<Page> pageItemReader(){
 
         XStreamMarshaller unmarshaller = new XStreamMarshaller();
 
         Map<String, Class> aliases = new HashMap<>();
-        aliases.put("mediawiki", Mediawiki.class);
+        aliases.put("page", Page.class);
 
         unmarshaller.setAliases(aliases);
 
         StaxEventItemReader reader = new StaxEventItemReader();
-        reader.setFragmentRootElementName("mediawiki");
+        reader.setFragmentRootElementName("page");
         reader.setUnmarshaller(unmarshaller);
 
         return reader;
     }
 
     @Bean
-    public MongoItemWriter<Mediawiki> pageItemWriter() throws Exception {
-        MongoItemWriter<Mediawiki> itemWriter = new MongoItemWriter<>();
+    public MongoItemWriter<Page> pageItemWriter() throws Exception {
+        MongoItemWriter<Page> itemWriter = new MongoItemWriter<>();
 
-        itemWriter.setCollection("customers");
+        itemWriter.setCollection("page");
         itemWriter.setTemplate(mongoTemplate(mongo));
         itemWriter.afterPropertiesSet();
 
@@ -86,16 +85,17 @@ public class BatchConfiguration {
     public Step stepOne() throws Exception{
 
         return stepBuilderFactory.get("stepOne")
-                .<Mediawiki, Mediawiki>chunk(100000)
-                .reader(pageItemReader())
+                .<Page, Page>chunk(100000)
+                .reader(multiResourceItemReader())
                 .writer(pageItemWriter())
+                .taskExecutor(new ThreadPoolTaskExecutor())
                 .build();
     }
 
     @Bean
-    public Job transitionJob() throws Exception{
+    public Job batchJob() throws Exception{
 
-        return jobBuilderFactory.get("transitionJob")
+        return jobBuilderFactory.get("batchJob")
                                 .start(stepOne())
                                 .build();
     }
