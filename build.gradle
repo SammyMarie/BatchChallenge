@@ -3,6 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarVersion}"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     }
@@ -10,6 +11,7 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'docker'
 apply plugin: 'jacoco'
 apply plugin: 'org.sonarqube'
 apply plugin: 'org.springframework.boot'
@@ -28,8 +30,7 @@ dependencies {
     compile 'com.h2database:h2'
     compile 'org.projectlombok:lombok'
     compile 'org.springframework:spring-oxm'
-    compile 'mysql:mysql-connector-java:6.0.6'
-    compile 'org.springframework.boot:spring-boot-starter-jdbc'
+    compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.batch:spring-batch-integration'
     compile 'org.springframework.boot:spring-boot-starter-batch'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
@@ -40,6 +41,20 @@ jar {
     baseName = 'challengeapp'
     group = 'com.thefloow'
     version = '1.0-SNAPSHOT'
+}
+
+task buildDocker(type: Docker, dependsOn: build) {
+    push = false
+    tag = 'dockertest'
+    applicationName = jar.baseName
+    dockerfile = file('src/main/docker/Dockerfile')
+    doFirst {
+        copy {
+            from jar
+            into stageDir
+        }
+    }
+    exposePort(8082)
 }
 
 task wrapper(type : Wrapper){
