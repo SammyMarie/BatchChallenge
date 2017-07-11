@@ -14,8 +14,8 @@ This is a Spring Batch application leveraging on technologies listed below:
 
 ###To Do List:
 1. Add scaling capability to batch processing.
-    - This will be implemented using local partitioning which gives 
-    restartability and is thread safe.
+    - Will be implemented using local partitioning giving 
+    restartability and thread safety.
 2. Add data Analysis of most and least frequently used words.
     - Will be done using either with Apache Spark or Google's guava Multiset.
 3. Add Fault(error handling) tolerance.
