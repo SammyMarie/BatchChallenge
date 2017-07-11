@@ -3,10 +3,10 @@ package com.thefloow.model;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -20,7 +20,13 @@ public class RevisionTest {
     @Before
     public void setup(){
 
-        populateSetupRevision();
+        contributor = Contributor.builder()
+                                 .id("65")
+                                 .ip("192.00.00.00")
+                                 .username("someonecares")
+                                 .build();
+
+        populateSetupRevision(contributor);
     }
 
     @Test
@@ -31,7 +37,7 @@ public class RevisionTest {
         assertThat(revision.getId(), is(equalTo("54")));
         assertThat(revision.getComment(), is(equalTo("Sweet coding challenge this!")));
         assertThat(revision.getFormat(), is(equalTo("text/x-wiki")));
-        assertThat(revision.getMinor(), is(equalTo(Collections.EMPTY_LIST)));
+        assertThat(revision.getMinor(), is(equalTo(Collections.emptyList())));
         assertThat(revision.getParentid(), is(equalTo("32")));
         assertThat(revision.getTimestamp(), is(equalTo("08:05:34T11-07-2017")));
         assertThat(revision.getText(), is(equalTo(text)));
@@ -43,24 +49,42 @@ public class RevisionTest {
     @Test
     public void checkSetters(){
 
-        revision.setComment("");
+        populateRevision();
+
+        assertThat(revision.getId(), is(equalTo("387")));
+        assertThat(revision.getComment(), is(equalTo("Hello! It's me again!!")));
+        assertThat(revision.getFormat(), is(equalTo("text/sammy")));
+        assertThat(revision.getContributor(), is(equalTo(contributor)));
+        assertThat(revision.getMinor(), is(equalTo(Collections.emptyList())));
+        assertThat(revision.getParentid(), is(equalTo("16")));
+        assertThat(revision.getTimestamp(), is(equalTo("10:37:44T11-07-2017")));
+        assertThat(revision.getText(), is(equalTo("One more try")));
+        assertThat(revision.getModel(), is(equalTo("marie'swiki")));
+        assertThat(revision.getSha1(), is(equalTo("someverylongwackylookingstring")));
     }
 
-    private void populateSetupRevision() {
+    private void populateRevision() {
+        revision.setId("387");
+        revision.setComment("Hello! It's me again!!");
+        revision.setFormat("text/sammy");
+        revision.setContributor(contributor);
+        revision.setMinor(Collections.EMPTY_LIST);
+        revision.setParentid("16");
+        revision.setTimestamp("10:37:44T11-07-2017");
+        revision.setText("One more try");
+        revision.setModel("marie'swiki");
+        revision.setSha1("someverylongwackylookingstring");
+    }
+
+    private void populateSetupRevision(Contributor contributor) {
         String text = "I would love to have finished but, too much has happened in my life right now." +
                 " And, I've learnt this while doing it as it's my first time! ;-)";
-
-        contributor = Contributor.builder()
-                                 .id("65")
-                                 .ip("192.00.00.00")
-                                 .username("someonecares")
-                                 .build();
 
         revision = Revision.builder()
                            .id("54")
                            .comment("Sweet coding challenge this!")
                            .format("text/x-wiki")
-                           .minor(new ArrayList<>())
+                           .minor(Collections.EMPTY_LIST)
                            .parentid("32")
                            .timestamp("08:05:34T11-07-2017")
                            .text(text)
