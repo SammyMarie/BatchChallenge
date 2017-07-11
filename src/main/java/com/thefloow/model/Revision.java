@@ -1,8 +1,10 @@
 package com.thefloow.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -18,7 +20,7 @@ public class Revision {
 
     private String parentid;
 
-    private Timestamp timestamp;
+    private String timestamp;
 
     private Contributor contributor;
 
@@ -30,7 +32,7 @@ public class Revision {
 
     private String format;
 
-    private Text text;
+    private String text;
 
     private String sha1;
 }

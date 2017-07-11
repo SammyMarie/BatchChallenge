@@ -14,4 +14,6 @@ public class Contributor {
     private String username;
 
     private String id;
+
+    private String ip;
 }
