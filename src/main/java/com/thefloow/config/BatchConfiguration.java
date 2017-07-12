@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.oxm.xstream.XStreamMarshaller;
@@ -49,7 +48,7 @@ public class BatchConfiguration {
 
     @Bean
     @StepScope
-    public StaxEventItemReader<Page> pageItemReader(@Value("#{jobParameters['data.input']}")String dataInput) throws Exception {
+    public StaxEventItemReader<Page> pageItemReader(@Value("#{jobParameters['input']}")String dataInput) throws Exception {
 
         StaxEventItemReader reader = new StaxEventItemReader();
         reader.setResource(new ClassPathResource(dataInput));
@@ -88,8 +87,17 @@ public class BatchConfiguration {
                 .partitioner(slaveStep().getName(), rangePartitioner())
                 .step(slaveStep())
                 .gridSize(8)
-                .taskExecutor(new SimpleAsyncTaskExecutor())
+                .taskExecutor(taskExecutor())
                 .build();
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
+        pool.setCorePoolSize(5);
+        pool.setMaxPoolSize(10);
+        pool.setWaitForTasksToCompleteOnShutdown(true);
+        return pool;
     }
 
     @Bean
