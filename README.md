@@ -9,7 +9,7 @@ This is a Spring Batch application leveraging on technologies listed below:
 6. Travis-ci for continuous integration
 
 ## Application Features
-1. Reads from one or more wikipedia page data dump file(s).
+1. Reads from wikipedia page data dump file(s).
 2. Writes to a MongoDB repository.
 3. Scaling capability using local partitioning giving restartability and thread safety.
 4. Fault(error handling) tolerance done by implementing retry, restart logic.
