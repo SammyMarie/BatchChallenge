@@ -21,3 +21,5 @@ This is a Spring Batch application leveraging on technologies listed below:
 3. Add unit tests for batch configuration logic.
     - Will be done using spring batch testing suite.
 4. Change configuration to run application with commandline arguments.
+
+[![Build Status](https://travis-ci.org/SammyMarie/BatchChallenge.svg?branch=develop)](https://travis-ci.org/SammyMarie/BatchChallenge)
