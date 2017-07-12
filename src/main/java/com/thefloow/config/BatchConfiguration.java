@@ -1,19 +1,21 @@
 package com.thefloow.config;
 
 import com.mongodb.Mongo;
+import com.thefloow.component.DataRangePartitioner;
 import com.thefloow.model.Page;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.data.MongoItemWriter;
-import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.oxm.xstream.XStreamMarshaller;
@@ -28,9 +30,6 @@ import java.util.Map;
 @Configuration
 public class BatchConfiguration {
 
-    @Value("${data.input}")
-    private Resource[] dataInput;
-
     @Value("${spring.data.mongodb.database}")
     private String mongoDb;
 
@@ -44,30 +43,31 @@ public class BatchConfiguration {
     private StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public MultiResourceItemReader<Page> multiResourceItemReader(){
-        MultiResourceItemReader<Page> reader = new MultiResourceItemReader<>();
+    public DataRangePartitioner rangePartitioner(){
+        return new DataRangePartitioner();
+    }
 
-        reader.setDelegate(pageItemReader());
-        reader.setResources(dataInput);
+    @Bean
+    @StepScope
+    public StaxEventItemReader<Page> pageItemReader(@Value("#{jobParameters['data.input']}")String dataInput) throws Exception {
+
+        StaxEventItemReader reader = new StaxEventItemReader();
+        reader.setResource(new ClassPathResource(dataInput));
+        reader.setFragmentRootElementName("page");
+        reader.setUnmarshaller(unmarshaller());
 
         return reader;
     }
 
     @Bean
-    public StaxEventItemReader<Page> pageItemReader(){
-
+    public XStreamMarshaller unmarshaller() {
         XStreamMarshaller unmarshaller = new XStreamMarshaller();
 
         Map<String, Class> aliases = new HashMap<>();
         aliases.put("page", Page.class);
 
         unmarshaller.setAliases(aliases);
-
-        StaxEventItemReader reader = new StaxEventItemReader();
-        reader.setFragmentRootElementName("page");
-        reader.setUnmarshaller(unmarshaller);
-
-        return reader;
+        return unmarshaller;
     }
 
     @Bean
@@ -82,13 +82,26 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step stepOne() throws Exception{
+    public Step masterStep() throws Exception{
 
-        return stepBuilderFactory.get("stepOne")
+        return stepBuilderFactory.get("masterStep")
+                .partitioner(slaveStep().getName(), rangePartitioner())
+                .step(slaveStep())
+                .gridSize(8)
+                .taskExecutor(new SimpleAsyncTaskExecutor())
+                .build();
+    }
+
+    @Bean
+    public Step slaveStep() throws Exception {
+
+        return stepBuilderFactory.get("slaveStep")
                 .<Page, Page>chunk(100000)
-                .reader(multiResourceItemReader())
+                .reader(pageItemReader(null))
                 .writer(pageItemWriter())
-                .taskExecutor(new ThreadPoolTaskExecutor())
+                .faultTolerant()
+                .retry(Exception.class)
+                .retryLimit(15)
                 .build();
     }
 
@@ -96,7 +109,7 @@ public class BatchConfiguration {
     public Job batchJob() throws Exception{
 
         return jobBuilderFactory.get("batchJob")
-                                .start(stepOne())
+                                .start(masterStep())
                                 .build();
     }
 
