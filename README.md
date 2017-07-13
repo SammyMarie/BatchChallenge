@@ -13,13 +13,13 @@ This is a Spring Batch application leveraging on technologies listed below:
 2. Writes to a MongoDB repository.
 3. Scaling capability using local partitioning giving restartability and thread safety.
 4. Fault(error handling) tolerance done by implementing retry, restart logic.
+5. Data Analysis of word count using Apache Spark.
 
 ###To Do List:
-1. Add data Analysis of most and least frequently used words.
-    - Will be done using either with Apache Spark or Google's guava Multiset.
-2. Add Fault(error handling) tolerance done by implementing skip batch logic.
-3. Add unit tests for batch configuration logic.
+1. Add Fault(error handling) tolerance done by implementing skip batch logic.
+2. Add unit tests for batch configuration logic.
     - Will be done using spring batch testing suite.
-4. Change configuration to run application with commandline arguments.
+3. Change configuration to run application with commandline arguments.
+4. Fix StackOverFlowError problem
 
 [![Build Status](https://travis-ci.org/SammyMarie/BatchChallenge.svg?branch=develop)](https://travis-ci.org/SammyMarie/BatchChallenge)
