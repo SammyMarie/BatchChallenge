@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 public class PageTest {
 
     private Page page;
+    private Redirect redirect;
     private Revision revision;
     private Contributor contributor;
 
@@ -23,14 +24,16 @@ public class PageTest {
 
         revision = populateSetupRevision(contributor);
 
+        redirect = Redirect.builder()
+                           .title("Some sweet acceptance")
+                           .build();
+
         page = Page.builder()
                    .id("34")
                    .ns("8")
                    .title("Wonderful Challenge")
                    .revision(revision)
-                   .redirect(Redirect.builder()
-                                     .title("Some sweet acceptance")
-                                     .build())
+                   .redirect(redirect)
                    .build();
     }
 
@@ -38,9 +41,7 @@ public class PageTest {
     public void checkGetters(){
         assertThat(page.getId(), is(equalTo("34")));
         assertThat(page.getNs(), is(equalTo("8")));
-        assertThat(page.getRedirect(), is(equalTo(Redirect.builder()
-                                                          .title("Some sweet acceptance")
-                                                          .build())));
+        assertThat(page.getRedirect(), is(equalTo(redirect)));
         assertThat(page.getRevision(), is(equalTo(revision)));
     }
 }

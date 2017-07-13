@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath "se.transmode.gradle:gradle-docker:${dockerVersion}"
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarVersion}"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     }
@@ -30,10 +30,11 @@ dependencies {
     compile 'com.h2database:h2'
     compile 'org.projectlombok:lombok'
     compile 'org.springframework:spring-oxm'
-    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.hibernate:hibernate-validator:5.2.4.Final'
+    compile "org.apache.spark:spark-sql_2.11:${sparkVersion}"
     compile 'org.springframework.batch:spring-batch-integration'
     compile 'org.springframework.boot:spring-boot-starter-batch'
-    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile "org.codehaus.janino:commons-compiler:${commonsVersion}"
     compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
@@ -55,6 +56,10 @@ task buildDocker(type: Docker, dependsOn: build) {
         }
     }
     exposePort(8082)
+}
+
+configurations.all {
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 }
 
 task wrapper(type : Wrapper){

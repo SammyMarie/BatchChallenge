@@ -1,8 +1,7 @@
 package com.thefloow.model;
 
 import lombok.*;
-import org.springframework.batch.item.ResourceAware;
-import org.springframework.core.io.Resource;
+import java.util.List;
 
 /**
  * Created by samif on 08/07/2017.
@@ -11,7 +10,7 @@ import org.springframework.core.io.Resource;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Page implements ResourceAware{
+public class Page {
 
     private String title;
 
@@ -23,10 +22,5 @@ public class Page implements ResourceAware{
 
     private Revision revision;
 
-    private Resource resource;
-
-    @Override
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
+    private List<Count> countList;
 }

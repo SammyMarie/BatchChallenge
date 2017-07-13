@@ -1,7 +1,9 @@
 package com.thefloow.config;
 
 import com.mongodb.Mongo;
+import com.thefloow.component.CustomExcpetion;
 import com.thefloow.component.DataRangePartitioner;
+import com.thefloow.component.WordCountProcessor;
 import com.thefloow.model.Page;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -48,7 +50,8 @@ public class BatchConfiguration {
 
     @Bean
     @StepScope
-    public StaxEventItemReader<Page> pageItemReader(@Value("#{jobParameters['input']}")String dataInput) throws Exception {
+    public StaxEventItemReader<Page> pageItemReader(
+            @Value("#{jobParameters['input']}")String dataInput) throws Exception {
 
         StaxEventItemReader reader = new StaxEventItemReader();
         reader.setResource(new ClassPathResource(dataInput));
@@ -94,10 +97,16 @@ public class BatchConfiguration {
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setCorePoolSize(5);
-        pool.setMaxPoolSize(8);
+        pool.setCorePoolSize(20);
+        pool.setQueueCapacity(20);
+        pool.setMaxPoolSize(20);
         pool.setWaitForTasksToCompleteOnShutdown(true);
         return pool;
+    }
+
+    @Bean
+    public WordCountProcessor countProcessor(){
+        return new WordCountProcessor();
     }
 
     @Bean
@@ -106,9 +115,10 @@ public class BatchConfiguration {
         return stepBuilderFactory.get("slaveStep")
                 .<Page, Page>chunk(100000)
                 .reader(pageItemReader(null))
+                .processor(countProcessor())
                 .writer(pageItemWriter())
                 .faultTolerant()
-                .retry(Exception.class)
+                .retry(CustomExcpetion.class)
                 .retryLimit(15)
                 .build();
     }
