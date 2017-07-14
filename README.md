@@ -16,10 +16,9 @@ This is a Spring Batch application leveraging on technologies listed below:
 5. Data Analysis of word count using Apache Spark.
 
 ###To Do List:
-1. Add Fault(error handling) tolerance done by implementing skip batch logic.
+1. Fix StackOverFlowError problem.
 2. Add unit tests for batch configuration logic.
     - Will be done using spring batch testing suite.
 3. Change configuration to run application with commandline arguments.
-4. Fix StackOverFlowError problem
 
 [![Build Status](https://travis-ci.org/SammyMarie/BatchChallenge.svg?branch=develop)](https://travis-ci.org/SammyMarie/BatchChallenge)
