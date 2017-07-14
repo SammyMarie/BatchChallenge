@@ -13,9 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SparkConfiguration {
 
-    @Value("${master.uri}")
-    private String masterUri;
-
     @Value("${spring.application.name}")
     private String application;
 
