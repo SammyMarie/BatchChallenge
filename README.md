@@ -14,6 +14,8 @@ This is a Spring Batch application leveraging on technologies listed below:
 3. Scaling capability using local partitioning giving restartability and thread safety.
 4. Fault(error handling) tolerance done by implementing retry, restart logic.
 5. Data Analysis of word count using Apache Spark.
+6. Application can be run using the following command:- ./gradlew clean build && java -Xmx8192m -jar build/libs/challengeapp-1.0-SNAPSHOT.jar -input=./data/sample.xml
+
 
 ###To Do List:
 1. Fix StackOverFlowError problem.
