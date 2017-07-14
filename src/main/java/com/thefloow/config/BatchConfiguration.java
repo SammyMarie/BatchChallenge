@@ -1,9 +1,10 @@
 package com.thefloow.config;
 
 import com.mongodb.Mongo;
-import com.thefloow.component.CustomExcpetion;
+import com.thefloow.component.CustomException;
 import com.thefloow.component.DataRangePartitioner;
 import com.thefloow.component.WordCountProcessor;
+import com.thefloow.model.Count;
 import com.thefloow.model.Page;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -17,12 +18,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.oxm.xstream.XStreamMarshaller;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,8 +76,8 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public MongoItemWriter<Page> pageItemWriter() throws Exception {
-        MongoItemWriter<Page> itemWriter = new MongoItemWriter<>();
+    public MongoItemWriter<List<Count>> pageItemWriter() throws Exception {
+        MongoItemWriter<List<Count>> itemWriter = new MongoItemWriter<>();
 
         itemWriter.setCollection("page");
         itemWriter.setTemplate(mongoTemplate(mongo));
@@ -95,16 +98,16 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public ThreadPoolTaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setCorePoolSize(20);
-        pool.setQueueCapacity(20);
-        pool.setMaxPoolSize(20);
-        pool.setWaitForTasksToCompleteOnShutdown(true);
-        return pool;
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setMaxPoolSize(8);
+        taskExecutor.setQueueCapacity(25);
+        taskExecutor.afterPropertiesSet();
+        return taskExecutor;
     }
 
     @Bean
+    @StepScope
     public WordCountProcessor countProcessor(){
         return new WordCountProcessor();
     }
@@ -113,12 +116,12 @@ public class BatchConfiguration {
     public Step slaveStep() throws Exception {
 
         return stepBuilderFactory.get("slaveStep")
-                .<Page, Page>chunk(100000)
+                .<Page, List<Count>>chunk(100000)
                 .reader(pageItemReader(null))
                 .processor(countProcessor())
                 .writer(pageItemWriter())
                 .faultTolerant()
-                .retry(CustomExcpetion.class)
+                .retry(CustomException.class)
                 .retryLimit(15)
                 .build();
     }

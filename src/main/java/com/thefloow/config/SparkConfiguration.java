@@ -22,7 +22,7 @@ public class SparkConfiguration {
     @Bean
     public SparkConf sparkConf(){
         SparkConf sparkConf = new SparkConf().setAppName(application)
-                                             .setMaster(masterUri);
+                                             .setMaster("local[4]");
 
         return sparkConf;
     }
@@ -37,6 +37,7 @@ public class SparkConfiguration {
 
     @Bean
     public JavaSparkContext sparkContext(){
-        return new JavaSparkContext(sparkConf());
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf());
+        return sparkContext;
     }
 }
